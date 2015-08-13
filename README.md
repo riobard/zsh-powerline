@@ -8,8 +8,7 @@ Powerline for Zsh in pure Zsh script. See also
 Download the Zsh script
 
 ```sh
-curl
-https://raw.githubusercontent.com/riobard/zsh-powerline/master/zsh-powerline.sh > ~/.zsh-powerline.sh
+curl https://raw.githubusercontent.com/riobard/zsh-powerline/master/zsh-powerline.sh > ~/.zsh-powerline.sh
 ```
 
 and source it in your `.zshrc`
