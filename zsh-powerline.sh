@@ -20,6 +20,7 @@ case "$(uname)" in
         ;;
 esac
 
+
 __git_info() {
     [ -x "$(which git)" ] || return    # git not found
 
@@ -48,21 +49,20 @@ __config_prompt() {
     # Color coding based on exit code of the previous command.  Note this must
     # be dealt with in the beginning of the function, otherwise the $? will not
     # match the right command executed.
-    if [ $? -eq 0 ]
-    then
-        local EXIT="%{$bg[green]%}"
+
+    if [ $? -eq 0 ]; then
+        local symbol_color='green'
     else
-        local EXIT="%{$bg[red]%}"
+        local symbol_color='red'
     fi
 
-    local RESET="%{${reset_color}%}"
-    local SYMBOL="%{$fg[white]%}$EXIT $PS_SYMBOL $RESET"
-    local GIT="%{$bg[blue]%}%{$fg[white]%}$(__git_info)$RESET"
-    local PATH="%{$bg[black]%}%{$fg[white]%} %~ $RESET"
-    local TIME="%{$fg[green]%}$(/bin/date -u '+%Y-%m-%d %H:%M:%S')$RESET"
+    local cwd="%K{black}%F{white} %~ %f%k"
+    local git="%K{blue}%F{white}$(__git_info)%f%k"
+    local symbol="%K{$symbol_color}%F{white} $PS_SYMBOL %f%k"
+    local time="%F{green}%D{%H:%M:%S}%f"
 
-    PROMPT="$PATH$GIT$SYMBOL "
-    RPROMPT="$TIME"
+    PROMPT="$cwd$git$symbol "
+    RPROMPT="$time"
 }
 
 precmd() {
