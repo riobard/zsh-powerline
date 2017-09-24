@@ -22,7 +22,7 @@ esac
 
 
 __git_info() {
-    [ -x "$(which git)" ] || return    # git not found
+    hash git 2>/dev/null || return    # git not found
 
     # get current branch name or short SHA1 hash for detached head
     local branch="$(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --always 2>/dev/null)"
@@ -30,15 +30,16 @@ __git_info() {
 
     local marks
 
-    # branch is modified?
-    [ -n "$(git status --porcelain)" ] && marks+=" $GIT_BRANCH_CHANGED_SYMBOL"
-
-    # how many commits local branch is ahead/behind of remote?
-    local stat="$(git status --porcelain --branch | grep '^##' | grep -o '\[.\+\]$')"
-    local aheadN="$(echo $stat | grep -o 'ahead \d\+' | grep -o '\d\+')"
-    local behindN="$(echo $stat | grep -o 'behind \d\+' | grep -o '\d\+')"
-    [ -n "$aheadN" ] && marks+=" $GIT_NEED_PUSH_SYMBOL$aheadN"
-    [ -n "$behindN" ] && marks+=" $GIT_NEED_PULL_SYMBOL$behindN"
+    # scan first two lines of output from `git status`
+    while IFS= read -r line; do
+        if [[ $line =~ ^## ]]; then # header line
+            [[ $line =~ ahead\ ([0-9]+) ]] && marks+=" $GIT_NEED_PUSH_SYMBOL$match[1]"
+            [[ $line =~ behind\ ([0-9]+) ]] && marks+=" $GIT_NEED_PULL_SYMBOL$match[1]"
+        else # branch is modified if output contains more lines after the header line
+            marks=" $GIT_BRANCH_CHANGED_SYMBOL$marks"
+            break
+        fi
+    done < <(git status --porcelain --branch)  # note the space between the two <
 
     # print the git branch segment without a trailing newline
     printf " $GIT_BRANCH_SYMBOL$branch$marks "
