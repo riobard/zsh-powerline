@@ -1,4 +1,4 @@
-readonly GIT_BRANCH_SYMBOL='⑂ '
+readonly GIT_BRANCH_SYMBOL='⑂'
 readonly GIT_BRANCH_CHANGED_SYMBOL='+'
 readonly GIT_NEED_PUSH_SYMBOL='⇡'
 readonly GIT_NEED_PULL_SYMBOL='⇣'
@@ -42,7 +42,7 @@ __git_info() {
     done < <(git status --porcelain --branch)  # note the space between the two <
 
     # print the git branch segment without a trailing newline
-    printf " $GIT_BRANCH_SYMBOL$branch$marks "
+    printf " $GIT_BRANCH_SYMBOL$branch$marks"
 }
 
 
@@ -57,12 +57,12 @@ __config_prompt() {
         local symbol_color='red'
     fi
 
-    local cwd="%K{black}%F{white} %~ %f%k"
-    local git="%K{blue}%F{white}$(__git_info)%f%k"
-    local symbol="%K{$symbol_color}%F{white} $PS_SYMBOL %f%k"
-    local time="%F{green}%D{%H:%M:%S}%f"
+    local cwd="%F{blue}%~%f"
+    local git="%F{cyan}$(__git_info)%f"
+    local symbol="%F{$symbol_color}$PS_SYMBOL%f"
+    local time="%F{cyan}%D{%H:%M:%S}%f"
 
-    PROMPT="$cwd$git$symbol "
+    PROMPT="$cwd$git $symbol "
     RPROMPT="$time"
 }
 
