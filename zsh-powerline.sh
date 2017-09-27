@@ -42,7 +42,7 @@ _git_info() {
             marks="$GIT_SYMBOL_BRANCH_CHANGED$marks"
             break
         fi
-    done < <(git status --porcelain --branch)  # note the space between the two <
+    done < <(git status --porcelain --branch 2>/dev/null)  # note the space between the two <
 
     # print the git branch segment without a trailing newline
     printf " $GIT_SYMBOL_BRANCH$branch$marks"
