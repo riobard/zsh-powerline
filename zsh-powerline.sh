@@ -5,10 +5,10 @@ readonly COLOR_SUCCESS='green'
 readonly COLOR_FAILURE='red'
 readonly COLOR_TIME='cyan'
 
-readonly GIT_SYMBOL_BRANCH='⑂'
-readonly GIT_SYMBOL_BRANCH_CHANGED='*'
-readonly GIT_SYMBOL_PUSH='↑'
-readonly GIT_SYMBOL_PULL='↓'
+readonly SYMBOL_GIT_BRANCH='⑂'
+readonly SYMBOL_GIT_MODIFIED='*'
+readonly SYMBOL_GIT_PUSH='↑'
+readonly SYMBOL_GIT_PULL='↓'
 
 # Assign prompt symbol based on OS
 case "$(uname)" in
@@ -25,27 +25,36 @@ esac
 
 
 _git_info() {
-    hash git 2>/dev/null || return    # git not found
+    hash git 2>/dev/null || return  # git not found
 
-    # get current branch name or short SHA1 hash for detached head
-    local branch="$(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --always 2>/dev/null)"
-    [ -n "$branch" ] || return  # git branch not found
+    # get current branch
+    local ref=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+    if [[ -n "$ref" ]]; then
+        # prepend branch symbol
+        ref=$SYMBOL_GIT_BRANCH$ref
+    else
+        # get most recent tag or abbreviated unique hash
+        ref=$(git describe --tags --always 2>/dev/null)
+    fi
+
+    [[ -n "$ref" ]] || return   # not a git repo
 
     local marks
 
     # scan first two lines of output from `git status`
     while IFS= read -r line; do
         if [[ $line =~ ^## ]]; then # header line
-            [[ $line =~ ahead\ ([0-9]+) ]] && marks+=" $GIT_SYMBOL_PUSH$match[1]"
-            [[ $line =~ behind\ ([0-9]+) ]] && marks+=" $GIT_SYMBOL_PULL$match[1]"
+            [[ $line =~ ahead\ ([0-9]+) ]] && marks+=" $SYMBOL_GIT_PUSH$match[1]"
+            [[ $line =~ behind\ ([0-9]+) ]] && marks+=" $SYMBOL_GIT_PULL$match[1]"
         else # branch is modified if output contains more lines after the header line
-            marks="$GIT_SYMBOL_BRANCH_CHANGED$marks"
+            marks="$SYMBOL_GIT_MODIFIED$marks"
             break
         fi
     done < <(git status --porcelain --branch 2>/dev/null)  # note the space between the two <
 
-    # print the git branch segment without a trailing newline
-    printf " $GIT_SYMBOL_BRANCH$branch$marks"
+    # print without a trailing newline
+    printf " $ref$marks"
 }
 
 
@@ -54,7 +63,7 @@ _config_prompt() {
     # be dealt with in the beginning of the function, otherwise the $? will not
     # match the right command executed.
 
-    if [ $? -eq 0 ]; then
+    if [[ $? -eq 0 ]]; then
         local symbol="%F{$COLOR_SUCCESS}$PS_SYMBOL%f"
     else
         local symbol="%F{$COLOR_FAILURE}$PS_SYMBOL%f"
